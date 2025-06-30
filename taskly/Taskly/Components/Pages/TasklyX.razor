@@ -1,0 +1,64 @@
+﻿@page "/taskly"
+
+@using Taskly.Models
+
+<PageTitle>Taskly</PageTitle>
+
+<h3>Taskly</h3>
+
+<div class="form">
+    <input type="text" placeholder="Title" />
+
+    <br />
+
+    <input type="text" placeholder="Summary" />
+
+    <br />
+
+    <select>
+        <option>Low</option>
+        <option>Medium</option>
+        <option>High</option>
+    </select>
+
+    <br />
+
+    <button>Add</button>
+</div>
+
+<hr />
+
+@if (!items.Any())
+{
+    <p><em>No tasks yet.</em></p>
+}
+else
+{
+    <ul>
+        @foreach(var item in items)
+        {
+            <li>
+                <input type="checkbox" />
+                <strong>@item.Title</strong> @item.Summary
+                <br />
+                Priority: <em>@item.Priority</em>,
+                Due: @(item.DueDate.HasValue ? item.DueDate.Value.ToShortDateString() : "No due date")
+                <br />
+                <button>Delete</button>
+                <hr />
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private List<TasklyItem> items = [
+        new () 
+        {
+            Id = Guid.NewGuid(),
+            Title = "Call client",
+            Summary = "Urgent task",
+            DueDate = DateTime.Now.AddDays(new Random().Next(1, 10))
+        }
+    ];
+}
