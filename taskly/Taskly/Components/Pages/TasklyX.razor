@@ -1,4 +1,5 @@
 ﻿@page "/taskly"
+@rendermode InteractiveServer
 
 @using Taskly.Models
 
@@ -7,15 +8,19 @@
 <h3>Taskly</h3>
 
 <div class="form">
-    <input type="text" placeholder="Title" />
+    <input type="text" placeholder="Title" @bind="title"/>
 
     <br />
 
-    <input type="text" placeholder="Summary" />
+    <input type="text" placeholder="Summary" @bind="summary"/>
 
     <br />
 
-    <select>
+    <input type="date" id="dueDate" @bind="dueDate" placeholder="YYYY-MM-DD" />
+
+    <br />
+
+    <select @bind="priority">
         <option>Low</option>
         <option>Medium</option>
         <option>High</option>
@@ -23,7 +28,7 @@
 
     <br />
 
-    <button>Add</button>
+    <button @onclick="AddTask">Add</button>
 </div>
 
 <hr />
@@ -38,13 +43,13 @@ else
         @foreach(var item in items)
         {
             <li>
-                <input type="checkbox" />
+                <input type="checkbox" @bind="item.IsDone" />
                 <strong>@item.Title</strong> @item.Summary
                 <br />
                 Priority: <em>@item.Priority</em>,
                 Due: @(item.DueDate.HasValue ? item.DueDate.Value.ToShortDateString() : "No due date")
                 <br />
-                <button>Delete</button>
+                <button @onclick="() => DeleteTask(item.Id)">Delete</button>
                 <hr />
             </li>
         }
@@ -52,13 +57,46 @@ else
 }
 
 @code {
-    private List<TasklyItem> items = [
-        new () 
+    private List<TasklyItem> items = [];
+
+    private string title = string.Empty;
+    private string summary = string.Empty;
+    private string priority = "Low";
+    private DateTime? dueDate = null;
+
+    private void AddTask()
+    {
+        if (string.IsNullOrEmpty(title)   || 
+            string.IsNullOrEmpty(summary) || 
+            string.IsNullOrEmpty(priority))
+        {
+            return;
+        }
+
+        TasklyItem item = new()
         {
             Id = Guid.NewGuid(),
-            Title = "Call client",
-            Summary = "Urgent task",
-            DueDate = DateTime.Now.AddDays(new Random().Next(1, 10))
+            Title = title,
+            Summary = summary,
+            Priority = priority,
+            CreatedAt = DateTime.Now
+        };
+
+        if (dueDate.HasValue)
+        {
+            item.DueDate = dueDate;
         }
-    ];
+
+        items.Add(item);
+    }
+
+    private void DeleteTask(Guid id)
+    {
+        TasklyItem? item = items.Where(i => i.Id == id).FirstOrDefault();
+
+        if (item is not null)
+        {
+            items.Remove(item);
+        }
+    }
 }
